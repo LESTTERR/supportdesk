@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SupportDesk — Create Ticket</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon logo-icon--sm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <span>SupportDesk</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="dashboard.html" class="nav-item">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a href="tickets.html" class="nav-item">
+          <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+          All Tickets
+          <span class="nav-badge" id="open-count">—</span>
+        </a>
+        <a href="create-ticket.html" class="nav-item active">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+          New Ticket
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="user-pill">
+          <div class="avatar" id="user-avatar">--</div>
+          <div class="user-info">
+            <div class="user-name" id="user-name">Loading…</div>
+            <div class="user-role" id="user-role">Agent</div>
+          </div>
+          <button class="logout-btn" onclick="logout()" title="Sign out">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Create Ticket</h1>
+          <p class="page-sub">Submit a new support request</p>
+        </div>
+      </div>
+
+      <div class="create-wrap">
+        <div class="form-card">
+
+          <form id="ticket-form" onsubmit="submitTicket(event)">
+
+            <div class="form-row">
+              <div class="field">
+                <label for="full-name">Full Name</label>
+                <input type="text" id="full-name" name="full_name"
+                  placeholder="John Smith" required/>
+              </div>
+              <div class="field">
+                <label for="user-email">Email</label>
+                <input type="email" id="user-email" name="email"
+                  placeholder="john@example.com" required/>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="subject">Subject</label>
+              <input type="text" id="subject" name="subject"
+                placeholder="Brief description of the issue" required/>
+            </div>
+
+            <div class="form-row">
+              <div class="field">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                  <option value="technical">Technical Support</option>
+                  <option value="billing">Billing</option>
+                  <option value="account">Account</option>
+                  <option value="feature">Feature Request</option>
+                  <option value="general">General Inquiry</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="priority">Priority</label>
+                <select id="priority" name="priority">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" rows="5"
+                placeholder="Please describe your issue in detail. Include any error messages, steps to reproduce, and what you expected to happen…"
+                required></textarea>
+            </div>
+
+            <div class="form-divider"></div>
+
+            <!-- File Upload -->
+            <div class="field">
+              <label>Attachments</label>
+              <div class="file-drop" id="file-drop-zone"
+                onclick="document.getElementById('file-input').click()"
+                ondragover="onDragOver(event)"
+                ondrop="onDrop(event)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="17,8 12,3 7,8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p><span>Click to upload</span> or drag and drop</p>
+                <p class="file-hint">PNG, JPG, PDF up to 10MB</p>
+              </div>
+              <input type="file" id="file-input" name="attachments[]"
+                multiple accept=".png,.jpg,.jpeg,.pdf"
+                style="display:none" onchange="onFileSelect(this)"/>
+              <div id="file-list"></div>
+            </div>
+
+            <!-- Error message -->
+            <div id="form-error" class="error-msg" style="display:none"></div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost" onclick="clearForm()">Clear</button>
+              <button type="submit" class="btn btn-primary" id="submit-btn">Submit ticket</button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Success Toast -->
+  <div class="toast" id="toast">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+      <polyline points="20,6 9,17 4,12"/>
+    </svg>
+    Ticket submitted successfully!
+  </div>
+
+  <script src="../js/auth.js"></script>
+  <script src="../js/create-ticket.js"></script>
+</body>
+</html>
