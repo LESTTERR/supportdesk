@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SupportDesk — Login</title>
-  <link rel="stylesheet" href="css/style.css"/>
+  <title>SupportDesk — Register</title>
+  <link rel="stylesheet" href="../css/style.css"/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 </head>
 <body class="login-body">
@@ -22,11 +22,16 @@
         <span>SupportDesk</span>
       </div>
 
-      <h1 class="login-title">Welcome back</h1>
-      <p class="login-sub">Sign in to your support portal</p>
+      <h1 class="login-title">Create Account</h1>
+      <p class="login-sub">Join the support desk team</p>
 
-      <!-- Login Form -->
-      <form id="login-form" onsubmit="handleLogin(event)">
+      <!-- Registration Form -->
+      <form id="register-form" onsubmit="handleRegister(event)">
+        <div class="field">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name"
+            placeholder="John Doe" required/>
+        </div>
         <div class="field">
           <label for="email">Email address</label>
           <input type="email" id="email" name="email"
@@ -37,24 +42,30 @@
           <input type="password" id="password" name="password"
             placeholder="••••••••" required/>
         </div>
-        <div id="login-error" class="error-msg" style="display:none">
-          Invalid email or password. Please try again.
+        <div class="field">
+          <label for="role">Role</label>
+          <select id="role" name="role" required>
+            <option value="agent">Support Agent</option>
+            <option value="admin">Administrator</option>
+          </select>
         </div>
-        <button type="submit" class="btn btn-primary btn-full">Sign in</button>
+        <div id="register-error" class="error-msg" style="display:none">
+          Registration failed. Please try again.
+        </div>
+        <div id="register-success" class="success-msg" style="display:none">
+          Registration successful! Please check your email.
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Create Account</button>
       </form>
 
       <p class="login-hint">
-        Forgot your password?
-        <a href="mailto:admin@company.com">Contact administrator</a>
-      </p>
-      <p class="login-hint">
-        Don't have an account?
-        <a href="pages/register.html">Create account</a>
+        Already have an account?
+        <a href="../index.html">Sign in</a>
       </p>
 
     </div>
   </div>
 
-  <script src="js/login.js"></script>
+  <script src="../js/register.js"></script>
 </body>
 </html>

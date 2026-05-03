@@ -2,12 +2,43 @@
  * create-ticket.js
  * Handles the create ticket form: file uploads, validation, submit.
  */
-
 let selectedFiles = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-  setupDragDrop();
-});
+async function submitTicket(event) {
+    event.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const errorEl = document.getElementById('form-error');
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    const form = document.getElementById('ticket-form');
+    const formData = new FormData();
+    formData.append('full_name', form['full_name'].value);
+    formData.append('email', form['user-email'].value);
+    formData.append('subject', form.subject.value);
+    formData.append('category', form.category.value);
+    formData.append('priority', form.priority.value);
+    formData.append('description', form.description.value);
+    selectedFiles.forEach(file => formData.append('attachments[]', file));
+
+    try {
+        const res = await fetch('../api/tickets.php', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (res.ok) {
+            showToast();
+            clearForm();
+        } else {
+            throw new Error(data.error || 'Submission failed');
+        }
+    } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit ticket';
+    }
+}
 
 /* ── File Handling ──*/
 function onFileSelect(input) {
@@ -69,49 +100,6 @@ function renderFileList() {
 }
 
 /* ── Form Submit ── */
-async function submitTicket(event) {
-  event.preventDefault();
-
-  const btn     = document.getElementById('submit-btn');
-  const errorEl = document.getElementById('form-error');
-  errorEl.style.display = 'none';
-
-  btn.textContent = 'Submitting…';
-  btn.disabled    = true;
-
-  try {
-    const form = document.getElementById('ticket-form');
-
-    // for demo / local storage)
-    const formData = {
-      subject: form.subject?.value || '',
-      description: form.description?.value || '',
-      priority: form.priority?.value || '',
-      files: selectedFiles.map(f => f.name)
-    };
-
-    // Save locally 
-    const tickets = JSON.parse(localStorage.getItem('tickets') || '[]');
-    tickets.push({
-      ...formData,
-      id: Date.now(),
-      status: 'open'
-    });
-    localStorage.setItem('tickets', JSON.stringify(tickets));
-
-    // Success UI
-    showToast();
-    clearForm();
-
-  } catch (err) {
-    showError('Something went wrong.');
-    console.error(err);
-  } finally {
-    btn.textContent = 'Submit ticket';
-    btn.disabled    = false;
-  }
-}
-
 function clearForm() {
   document.getElementById('ticket-form').reset();
   selectedFiles = [];

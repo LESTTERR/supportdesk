@@ -1,67 +1,58 @@
-/**
- * auth.js
- * Shared authentication helpers.
- * Included on every protected page.
- */
+const AUTH_CHECK_URL = '../api/current-user.php';
+let currentUser = null;
 
-const AUTH_KEY = 'supportdesk_user';
-
-/** Returns the logged-in user object or null */
-function getUser() {
-  try {
-    const raw = sessionStorage.getItem(AUTH_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+async function requireAuth() {
+    const user = await getUser();
+    if (!user) {
+        const depth = window.location.pathname.includes('/pages/') ? '../' : '';
+        window.location.href = depth + 'index.html';
+        return null;
+    }
+    return user;
 }
 
-/** Redirect to login if not authenticated */
-function requireAuth() {
-  const user = getUser();
-  if (!user) {
+async function getUser() {
+    if (currentUser) return currentUser;
+    try {
+        const res = await fetch(AUTH_CHECK_URL);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (data.authenticated) {
+            currentUser = data.user;
+            return currentUser;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+async function logout() {
+    await fetch('../api/logout.php', { method: 'POST' });
+    sessionStorage.clear();
     const depth = window.location.pathname.includes('/pages/') ? '../' : '';
     window.location.href = depth + 'index.html';
-    return null;
-  }
-  return user;
 }
 
-/** Log out and redirect */
-function logout() {
-  sessionStorage.removeItem(AUTH_KEY);
-  const depth = window.location.pathname.includes('/pages/') ? '../' : '';
-  window.location.href = depth + 'index.html';
+async function initSidebarUser() {
+    const user = await requireAuth();
+    if (!user) return;
+    document.getElementById('user-avatar').textContent = initials(user.name);
+    document.getElementById('user-name').textContent = user.name;
+    document.getElementById('user-role').textContent = user.role;
 }
 
-/** Populate sidebar user info */
-function initSidebarUser() {
-  const user = requireAuth();
-  if (!user) return;
-
-  const avatarEl  = document.getElementById('user-avatar');
-  const nameEl    = document.getElementById('user-name');
-  const roleEl    = document.getElementById('user-role');
-
-  if (avatarEl) avatarEl.textContent = initials(user.name);
-  if (nameEl)   nameEl.textContent   = user.name;
-  if (roleEl)   roleEl.textContent   = user.role || 'Agent';
+async function initNavBadge() {
+    const el = document.getElementById('open-count');
+    if (!el) return;
+    const res = await fetch('../api/tickets.php?status=open');
+    const tickets = await res.json();
+    el.textContent = tickets.length;
 }
 
-/** Open ticket count badge (STATIC ONLY) */
-function initNavBadge() {
-  const el = document.getElementById('open-count');
-  if (!el) return;
-
-  // Static value 
-  el.textContent = '0';
+function initials(name) {
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
-/** Helper — initials from full name */
-function initials(name = '') {
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '??';
-}
-
-// Run on every protected page
 initSidebarUser();
 initNavBadge();

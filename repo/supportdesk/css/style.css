@@ -20,22 +20,23 @@
   --c-danger:       #DC2626;
   --c-danger-bg:    #FEF2F2;
   --c-purple:       #7C3AED;
-  --radius:         10px;
-  --radius-sm:      6px;
+  --radius:         12px;
+  --radius-sm:      8px;
 }
 
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--c-bg);
   color: var(--c-text);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
   min-height: 100vh;
 }
 
 a { text-decoration: none; color: inherit; }
 
-/* ── LAYOUT ─────────────────────────────────────────────── */
+/* ── GLOBAL LAYOUT ───────────────────────────────────────── */
+/* Used by dashboard.html, tickets.html, create-ticket.html, ticket-detail.html */
 .layout {
   display: flex;
   min-height: 100vh;
@@ -48,6 +49,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 /* ── SIDEBAR ─────────────────────────────────────────────── */
+/* Sidebar used by dashboard.html, tickets.html, create-ticket.html, ticket-detail.html */
 .sidebar {
   width: 220px;
   background: var(--c-surface);
@@ -68,7 +70,7 @@ a { text-decoration: none; color: inherit; }
   padding: 0 1.25rem 1.25rem;
   border-bottom: 0.5px solid var(--c-border);
   margin-bottom: 0.75rem;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -180,11 +182,18 @@ a { text-decoration: none; color: inherit; }
 .logout-btn:hover { color: var(--c-danger); }
 
 /* ── PAGE HEADER ──────────────────────────────────────────── */
+/* Header used by dashboard.html, tickets.html, create-ticket.html, ticket-detail.html */
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.page-header > div {
+  flex: 1;
+  min-width: 200px;
 }
 .page-title {
   font-size: 20px;
@@ -205,7 +214,7 @@ a { text-decoration: none; color: inherit; }
   padding: 9px 16px;
   border-radius: var(--radius-sm);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   border: none;
@@ -223,6 +232,7 @@ a { text-decoration: none; color: inherit; }
 .btn-full { width: 100%; justify-content: center; }
 
 /* ── FORM FIELDS ──────────────────────────────────────────── */
+/* Forms used by create-ticket.html, register.html, and login.html */
 .field { margin-bottom: 1rem; }
 .field label {
   display: block;
@@ -241,7 +251,7 @@ a { text-decoration: none; color: inherit; }
   border: 0.5px solid var(--c-border);
   border-radius: var(--radius-sm);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   background: var(--c-surface);
   color: var(--c-text);
   outline: none;
@@ -262,7 +272,8 @@ a { text-decoration: none; color: inherit; }
   border: 0.5px solid #fca5a5;
 }
 
-/* ── DASHBOARD ────────────────────────────────────────────── */
+/* ── DASHBOARD PAGE STYLES ───────────────────────────────── */
+/* Styles used only by dashboard.html */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -305,11 +316,112 @@ a { text-decoration: none; color: inherit; }
   border: 0.5px solid var(--c-border);
   border-radius: var(--radius);
   padding: 1.25rem;
+  box-shadow: 0 18px 40px rgba(22, 24, 29, 0.05);
 }
+/* ── TICKET DETAIL PAGE STYLES ───────────────────────────── */
+/* Styles used by ticket-detail.html */
 .card-title {
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 1rem;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.75rem;
+  border-bottom: 0.5px solid var(--c-border);
+}
+.detail-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.detail-row:last-of-type {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.detail-block {
+  background: var(--c-bg);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  border: 0.5px solid var(--c-border);
+  margin-bottom: 1.75rem;
+}
+.detail-block:last-child {
+  margin-bottom: 0;
+}
+.detail-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--c-muted);
+  margin-bottom: 0;
+}
+
+/* Make labels in the top rows BOLD */
+.detail-row .detail-label {
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+/* Keep the labels in description/attachment blocks NORMAL or semi-bold */
+.detail-block .detail-label {
+  font-weight: 500;
+  color: var(--c-muted);
+}
+
+/* Ensure the actual content (Description text) is not bold */
+#detail-description {
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--c-text);
+  line-height: 1.5;
+  word-break: break-word;
+}
+.detail-box {
+  background: var(--c-surface);
+  border: 0.5px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  min-height: 120px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.6;
+}
+#detail-attachments {
+  display: grid;
+  gap: 0.8rem;
+}
+.attachment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--c-accent-light);
+  border: 0.5px solid #bfdbfe;
+}
+.attachment-item a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--c-accent);
+  word-break: break-all;
+}
+.attachment-meta {
+  font-size: 12px;
+  color: var(--c-muted);
+  white-space: nowrap;
 }
 
 /* Recent tickets */
@@ -354,7 +466,7 @@ a { text-decoration: none; color: inherit; }
 .act-text {
   font-size: 12px;
   color: var(--c-muted);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 .act-text strong { color: var(--c-text); font-weight: 500; }
 
@@ -376,7 +488,8 @@ a { text-decoration: none; color: inherit; }
 .badge-low      { background: #F0FDF4; color: #15803D; }
 .badge-critical { background: #FDF4FF; color: #7E22CE; }
 
-/* ── TICKET TABLE ─────────────────────────────────────────── */
+/* ── TICKETS PAGE STYLES ─────────────────────────────────── */
+/* Styles used only by tickets.html */
 .toolbar {
   display: flex;
   align-items: center;
@@ -476,7 +589,8 @@ a { text-decoration: none; color: inherit; }
 .ticket-date { color: var(--c-muted); font-size: 12px; }
 .table-loading { text-align: center; padding: 2rem; color: var(--c-muted); }
 
-/* ── CREATE TICKET ────────────────────────────────────────── */
+/* ── CREATE TICKET PAGE STYLES ───────────────────────────── */
+/* Styles used only by create-ticket.html */
 .create-wrap { max-width: 680px; }
 .form-card {
   background: var(--c-surface);
@@ -545,7 +659,8 @@ a { text-decoration: none; color: inherit; }
   line-height: 1;
 }
 
-/* ── LOGIN ────────────────────────────────────────────────── */
+/* ── AUTH PAGES STYLES ───────────────────────────────────── */
+/* Styles used by index.html (login) and register.html */
 .login-body {
   display: flex;
   align-items: center;
@@ -623,6 +738,7 @@ a { text-decoration: none; color: inherit; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .two-col    { grid-template-columns: 1fr; }
   .form-row   { grid-template-columns: 1fr; }
+  .detail-row { grid-template-columns: 1fr; }
   .sidebar    { width: 60px; }
   .sidebar-logo span,
   .nav-item > span:not(.nav-badge),
@@ -631,4 +747,19 @@ a { text-decoration: none; color: inherit; }
   .nav-item   { justify-content: center; padding: 10px; }
   .sidebar-bottom { padding: 0.75rem; }
   .user-pill  { justify-content: center; }
+}
+
+@media (max-width: 640px) {
+  .main { padding: 1.25rem 1rem; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .page-title { font-size: 18px; }
+  .card { padding: 1rem; }
+  .detail-block { padding: 1rem; }
+  .detail-label { font-size: 10px; }
+  .detail-value { font-size: 14px; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .detail-row { gap: 1rem; }
+  .btn { padding: 8px 12px; font-size: 14px; }
+  .login-card { padding: 2rem 1.5rem; }
 }

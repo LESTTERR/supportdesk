@@ -64,7 +64,7 @@
       <div class="create-wrap">
         <div class="form-card">
 
-          <form id="ticket-form" onsubmit="submitTicket(event)">
+          <form id="ticket-form" onsubmit="submitTicket(event)" enctype="multipart/form-data">
 
             <div class="form-row">
               <div class="field">
@@ -89,11 +89,10 @@
               <div class="field">
                 <label for="category">Category</label>
                 <select id="category" name="category">
-                  <option value="technical">Technical Support</option>
-                  <option value="billing">Billing</option>
-                  <option value="account">Account</option>
-                  <option value="feature">Feature Request</option>
-                  <option value="general">General Inquiry</option>
+                  <option value="Technical">Technical</option>
+                  <option value="Billing">Billing</option>
+                  <option value="Account">Account</option>
+                  <option value="General Inquiry">General Inquiry</option>
                 </select>
               </div>
               <div class="field">

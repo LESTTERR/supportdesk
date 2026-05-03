@@ -1,0 +1,3 @@
+Options -Indexes
+RemoveHandler .php .phtml .php5
+AddType text/plain .php .phtml .php5

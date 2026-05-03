@@ -2,94 +2,56 @@
  * tickets.js
  * Loads and renders the ticket list with search + filter.
  */
-
-let allTickets = [];
 let currentFilter = 'all';
+let searchQuery = '';
 
-document.addEventListener('DOMContentLoaded', loadTickets);
+document.addEventListener('DOMContentLoaded', () => {
+    loadTickets();
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        loadTickets();
+    });
+});
 
-function loadTickets() {
-  const tbody = document.getElementById('ticket-tbody');
+async function loadTickets() {
+    const params = new URLSearchParams();
+    if (currentFilter !== 'all') params.append('status', currentFilter);
+    if (searchQuery) params.append('search', searchQuery);
 
-  try {
-    // Get from localStorage 
-    allTickets = JSON.parse(localStorage.getItem('tickets') || '[]');
+    const res = await fetch(`../api/tickets.php?${params.toString()}`);
+    const tickets = await res.json();
+    renderTickets(tickets);
+}
 
-    // Ensure default fields 
-    allTickets = allTickets.map(t => ({
-      ...t,
-      status: t.status || 'open',
-      user_name: t.user_name || 'You',
-      created_at: t.created_at || new Date().toISOString()
-    }));
-
-    // Summary
-    const open   = allTickets.filter(t => t.status === 'open').length;
-    const prog   = allTickets.filter(t => t.status === 'in progress').length;
-    const closed = allTickets.filter(t => t.status === 'closed').length;
-
-    const sumEl  = document.getElementById('ticket-summary');
-    if (sumEl) {
-      sumEl.textContent = `${open} open · ${prog} in progress · ${closed} closed`;
+function renderTickets(tickets) {
+    const tbody = document.getElementById('ticket-tbody');
+    if (!tickets.length) {
+        tbody.innerHTML = '<tr><td colspan="7">No tickets found</td></tr>';
+        return;
     }
-
-    renderTickets();
-
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="7" class="table-loading">Failed to load tickets.</td></tr>`;
-    console.error(err);
-  }
-}
-
-function renderTickets() {
-  const tbody  = document.getElementById('ticket-tbody');
-  const query  = (document.getElementById('search-input')?.value || '').toLowerCase();
-
-  const rows = allTickets.filter(t => {
-    const matchFilter = currentFilter === 'all' || t.status === currentFilter;
-    const matchSearch = !query
-      || t.subject.toLowerCase().includes(query)
-      || String(t.id).includes(query)
-      || t.user_name.toLowerCase().includes(query);
-
-    return matchFilter && matchSearch;
-  });
-
-  if (rows.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="table-loading">No tickets match your search.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = rows.map(t => `
-    <tr>
-      <td class="ticket-id">#${t.id}</td>
-      <td class="ticket-subject">
-        <a href="ticket-detail.html?id=${t.id}">${escHtml(t.subject)}</a>
-      </td>
-      <td>${statusBadge(t.status)}</td>
-      <td>${priorityBadge(t.priority)}</td>
-      <td>
-        <div class="ticket-user">
-          <div class="av-sm">${initials(t.user_name)}</div>
-          ${escHtml(t.user_name)}
-        </div>
-      </td>
-      <td class="ticket-date">${escHtml(t.assigned_to || 'Unassigned')}</td>
-      <td class="ticket-date">${formatDate(t.created_at)}</td>
-    </tr>
-  `).join('');
-}
-
-function filterTickets() {
-  renderTickets();
+    tbody.innerHTML = tickets.map(t => `
+        <tr>
+            <td class="ticket-id">#${t.id}</td>
+            <td class="ticket-subject"><a href="ticket-detail.html?id=${t.id}">${escHtml(t.subject)}</a></td>
+            <td>${statusBadge(t.status)}</td>
+            <td>${priorityBadge(t.priority)}</td>
+            <td><div class="ticket-user"><div class="av-sm">${initials(t.user_name)}</div>${escHtml(t.user_name)}</div></td>
+            <td>Unassigned</td>
+            <td>${formatDate(t.created_at)}</td>
+        </tr>
+    `).join('');
 }
 
 function setFilter(filter, btn) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTickets();
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadTickets();
 }
+
+function filterTickets() { loadTickets(); } // debounced if needed
+// helpers: statusBadge, priorityBadge, formatDate, initials, escHtml same as before
+
 
 /* ── Helpers ── */
 function escHtml(str = '') {
