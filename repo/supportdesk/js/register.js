@@ -8,7 +8,6 @@ async function handleRegister(event) {
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const role = document.getElementById('role').value;
     const errorEl = document.getElementById('register-error');
     const successEl = document.getElementById('register-success');
 
@@ -19,15 +18,14 @@ async function handleRegister(event) {
         const res = await fetch('../api/register.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, role })
+            body: JSON.stringify({ name, email, password })
         });
         const data = await res.json();
         if (data.success) {
             successEl.textContent = 'Registration successful! Redirecting...';
             successEl.style.display = 'block';
-            // Redirect to dashboard after a brief delay
             setTimeout(() => {
-                window.location.href = 'dashboard.html';
+                window.location.href = 'tickets.html';
             }, 1500);
         } else {
             errorEl.textContent = data.message || 'Registration failed';

@@ -4,8 +4,9 @@ let currentUser = null;
 async function requireAuth() {
     const user = await getUser();
     if (!user) {
-        const depth = window.location.pathname.includes('/pages/') ? '../' : '';
-        window.location.href = depth + 'index.html';
+        window.location.href = window.location.pathname.includes('/pages/')
+            ? 'login.html'
+            : 'pages/login.html';
         return null;
     }
     return user;
@@ -30,28 +31,91 @@ async function getUser() {
 async function logout() {
     await fetch('../api/logout.php', { method: 'POST' });
     sessionStorage.clear();
-    const depth = window.location.pathname.includes('/pages/') ? '../' : '';
-    window.location.href = depth + 'index.html';
+    window.location.href = window.location.pathname.includes('/pages/')
+        ? 'login.html'
+        : 'pages/login.html';
 }
 
 async function initSidebarUser() {
     const user = await requireAuth();
     if (!user) return;
-    document.getElementById('user-avatar').textContent = initials(user.name);
-    document.getElementById('user-name').textContent = user.name;
-    document.getElementById('user-role').textContent = user.role;
+    const avatar = document.getElementById('user-avatar');
+    const name = document.getElementById('user-name');
+    const role = document.getElementById('user-role');
+    if (avatar) avatar.textContent = initials(user.name);
+    if (name) name.textContent = user.name;
+    if (role) role.textContent = formatRole(user.role);
+    applyRoleUi(user);
 }
 
 async function initNavBadge() {
     const el = document.getElementById('open-count');
     if (!el) return;
-    const res = await fetch('../api/tickets.php?status=open');
-    const tickets = await res.json();
-    el.textContent = tickets.length;
+    try {
+        const res = await fetch('../api/tickets.php?status=open');
+        const tickets = await res.json();
+        el.textContent = Array.isArray(tickets) ? tickets.length : '0';
+    } catch {
+        el.textContent = '0';
+    }
 }
 
 function initials(name) {
-    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    return String(name || '')
+        .split(' ')
+        .filter(Boolean)
+        .map(w => w[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2) || '--';
+}
+
+function formatRole(role = '') {
+    const labels = {
+        customer: 'Customer',
+        agent: 'Support Agent',
+        admin: 'Administrator'
+    };
+    return labels[role] || role;
+}
+
+function applyRoleUi(user) {
+    document.querySelectorAll('.admin-only').forEach((el) => {
+        el.style.display = user.role === 'admin' ? '' : 'none';
+    });
+
+    if (window.location.pathname.endsWith('/staff.html') && user.role !== 'admin') {
+        window.location.href = 'tickets.html';
+        return;
+    }
+
+    if (user.role !== 'customer') return;
+
+    const dashboardLink = document.querySelector('.sidebar-nav a[href="dashboard.html"]');
+    if (dashboardLink) dashboardLink.style.display = 'none';
+
+    const ticketsLink = document.querySelector('.sidebar-nav a[href="tickets.html"]');
+    if (ticketsLink) {
+        ticketsLink.childNodes.forEach((node) => {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.includes('All Tickets')) {
+                node.textContent = ' My Tickets ';
+            }
+        });
+    }
+
+    const pageTitle = document.querySelector('.page-title');
+    if (pageTitle && pageTitle.textContent.trim() === 'All Tickets') {
+        pageTitle.textContent = 'My Tickets';
+    }
+
+    const newTicketText = document.querySelector('.page-sub');
+    if (newTicketText && newTicketText.textContent.includes('Submit a new support request')) {
+        newTicketText.textContent = 'Send a request to the support team';
+    }
+
+    if (window.location.pathname.endsWith('/dashboard.html')) {
+        window.location.href = 'tickets.html';
+    }
 }
 
 initSidebarUser();

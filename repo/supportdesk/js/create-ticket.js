@@ -4,6 +4,11 @@
  */
 let selectedFiles = [];
 
+document.addEventListener('DOMContentLoaded', async () => {
+  setupDragDrop();
+  await populateRequesterFields();
+});
+
 async function submitTicket(event) {
     event.preventDefault();
     const btn = document.getElementById('submit-btn');
@@ -14,12 +19,12 @@ async function submitTicket(event) {
 
     const form = document.getElementById('ticket-form');
     const formData = new FormData();
-    formData.append('full_name', form['full_name'].value);
-    formData.append('email', form['user-email'].value);
-    formData.append('subject', form.subject.value);
+    formData.append('full_name', document.getElementById('full-name').value.trim());
+    formData.append('email', document.getElementById('user-email').value.trim());
+    formData.append('subject', form.subject.value.trim());
     formData.append('category', form.category.value);
     formData.append('priority', form.priority.value);
-    formData.append('description', form.description.value);
+    formData.append('description', form.description.value.trim());
     selectedFiles.forEach(file => formData.append('attachments[]', file));
 
     try {
@@ -27,7 +32,9 @@ async function submitTicket(event) {
         const data = await res.json();
         if (res.ok) {
             showToast();
-            clearForm();
+            window.setTimeout(() => {
+              window.location.href = `ticket-detail.html?id=${encodeURIComponent(data.ticket_id)}`;
+            }, 700);
         } else {
             throw new Error(data.error || 'Submission failed');
         }
@@ -63,6 +70,23 @@ function setupDragDrop() {
   const zone = document.getElementById('file-drop-zone');
   if (!zone) return;
   zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+}
+
+async function populateRequesterFields() {
+  if (typeof getUser !== 'function') return;
+  const user = await getUser();
+  if (!user || user.role === 'agent' || user.role === 'admin') return;
+
+  const nameField = document.getElementById('full-name');
+  const emailField = document.getElementById('user-email');
+  if (nameField) {
+    nameField.value = user.name || '';
+    nameField.readOnly = true;
+  }
+  if (emailField) {
+    emailField.value = user.email || '';
+    emailField.readOnly = true;
+  }
 }
 
 function addFiles(files) {

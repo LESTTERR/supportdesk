@@ -9,7 +9,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function setTodayDate() {
     const el = document.getElementById('today-date');
-    if (el) el.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    if (el) {
+        el.textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    }
 }
 
 async function loadDashboardData() {
@@ -17,43 +24,71 @@ async function loadDashboardData() {
         const res = await fetch('../api/dashboard-dash.php');
         const data = await res.json();
 
+        if (!res.ok) {
+            throw new Error(data.error || 'Unable to load dashboard');
+        }
+
         document.getElementById('stat-open').textContent = data.stats.open;
         document.getElementById('stat-progress').textContent = data.stats.in_progress;
         document.getElementById('stat-resolved').textContent = data.stats.resolved_today;
         document.getElementById('stat-response').textContent = data.stats.avg_response;
 
-        const recentContainer = document.getElementById('recent-tickets-list');
-        if (data.recent_tickets.length) {
-            recentContainer.innerHTML = data.recent_tickets.map(t => `
-                <div class="recent-ticket">
-                    <span class="rt-id">#${t.id}</span>
-                    <span class="rt-subject">${escHtml(t.subject)}</span>
-                    <span class="rt-pri">${priorityBadge(t.priority)}</span>
-                </div>
-            `).join('');
-        } else {
-            recentContainer.innerHTML = '<p class="loading-msg">No tickets yet.</p>';
-        }
-
-        const activityContainer = document.getElementById('activity-list');
-        activityContainer.innerHTML = data.activity.map(a => `
-            <div class="activity-item">
-                <div class="act-dot" style="background:#16A34A"></div>
-                <div class="act-text"><strong>${escHtml(a.actor)}</strong> ${escHtml(a.description)} · ${escHtml(a.time_ago)}</div>
-            </div>
-        `).join('');
+        renderRecentTickets(data.recent_tickets || []);
+        renderActivity(data.activity || []);
     } catch (err) {
-        console.error('Dashboard load error', err);
+        const recentContainer = document.getElementById('recent-tickets-list');
+        const activityContainer = document.getElementById('activity-list');
+        if (recentContainer) recentContainer.innerHTML = `<p class="loading-msg">${escHtml(err.message)}</p>`;
+        if (activityContainer) activityContainer.innerHTML = '<p class="loading-msg">Activity is unavailable.</p>';
     }
 }
 
-function priorityBadge(p) {
-    const map = { High:'badge-high', Medium:'badge-medium', Low:'badge-low', Critical:'badge-critical' };
-    return `<span class="badge ${map[p] || 'badge-medium'}">${escHtml(p)}</span>`;
+function renderRecentTickets(tickets) {
+    const recentContainer = document.getElementById('recent-tickets-list');
+    if (!recentContainer) return;
+
+    if (!tickets.length) {
+        recentContainer.innerHTML = '<p class="loading-msg">No tickets yet.</p>';
+        return;
+    }
+
+    recentContainer.innerHTML = tickets.map((ticket) => `
+        <a class="recent-ticket" href="ticket-detail.html?id=${ticket.id}">
+            <span class="rt-id">#${ticket.id}</span>
+            <span class="rt-subject">${escHtml(ticket.subject)}</span>
+            <span class="rt-pri">${priorityBadge(ticket.priority)}</span>
+        </a>
+    `).join('');
 }
 
+function renderActivity(activity) {
+    const activityContainer = document.getElementById('activity-list');
+    if (!activityContainer) return;
 
-/* -- Helpers -- */
+    if (!activity.length) {
+        activityContainer.innerHTML = '<p class="loading-msg">No activity yet.</p>';
+        return;
+    }
+
+    activityContainer.innerHTML = activity.map((item) => `
+        <div class="activity-item">
+            <div class="act-dot ${item.type === 'reply' ? 'act-dot-reply' : ''}"></div>
+            <div class="act-text"><strong>${escHtml(item.actor)}</strong> ${escHtml(item.description)} - ${escHtml(item.time_ago)}</div>
+        </div>
+    `).join('');
+}
+
+function priorityBadge(priority = '') {
+    const normalized = priority.toLowerCase();
+    const map = {
+        high: 'badge-high',
+        medium: 'badge-medium',
+        low: 'badge-low',
+        critical: 'badge-critical',
+    };
+    return `<span class="badge ${map[normalized] || 'badge-medium'}">${escHtml(normalized || 'medium')}</span>`;
+}
+
 function escHtml(str = '') {
     return String(str)
         .replace(/&/g, '&amp;')

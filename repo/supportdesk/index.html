@@ -1,60 +1,127 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SupportDesk — Login</title>
+  <title>SupportDesk - Intelligent Support Ticketing</title>
   <link rel="stylesheet" href="css/style.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 </head>
-<body class="login-body">
+<body class="landing-body">
+  <canvas id="landing-canvas" aria-hidden="true"></canvas>
 
-  <div class="login-wrap">
-    <div class="login-card">
+  <header class="landing-nav">
+    <a href="index.html" class="landing-brand">
+      <span class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+      </span>
+      <span>SupportDesk</span>
+    </a>
+    <nav class="landing-actions">
+      <a href="pages/register.html" class="landing-link">Create account</a>
+      <a href="pages/login.html" class="btn landing-btn">Sign in</a>
+    </nav>
+  </header>
 
-      <div class="login-logo">
-        <div class="logo-icon">
-          <!-- Chat bubble icon -->
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-          </svg>
+  <main class="landing-main">
+    <section class="landing-hero">
+      <div class="landing-copy">
+        <p class="landing-kicker">Animated ticket intelligence</p>
+        <h1>SupportDesk</h1>
+        <p class="landing-lead">
+          Turn scattered customer issues into a visible, assignable, trackable support flow. Customers send requests, agents resolve them, and admins keep the queue moving.
+        </p>
+        <div class="landing-proof" aria-label="SupportDesk roles">
+          <span>Customer portal</span>
+          <span>Agent workspace</span>
+          <span>Admin routing</span>
         </div>
-        <span>SupportDesk</span>
+        <div class="landing-cta">
+          <a href="pages/register.html" class="btn btn-primary">Create customer account</a>
+          <a href="pages/login.html" class="btn btn-ghost landing-ghost">Sign in to portal</a>
+        </div>
       </div>
 
-      <h1 class="login-title">Welcome back</h1>
-      <p class="login-sub">Sign in to your support portal</p>
-
-      <!-- Login Form -->
-      <form id="login-form" onsubmit="handleLogin(event)">
-        <div class="field">
-          <label for="email">Email address</label>
-          <input type="email" id="email" name="email"
-            placeholder="agent@company.com" required/>
+      <div class="landing-console" aria-hidden="true">
+        <div class="console-top">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password"
-            placeholder="••••••••" required/>
+        <div class="console-header">
+          <div>
+            <span>Queue pulse</span>
+            <strong>Today&apos;s support flow</strong>
+          </div>
+          <small>Live</small>
         </div>
-        <div id="login-error" class="error-msg" style="display:none">
-          Invalid email or password. Please try again.
+        <div class="console-row console-row-active">
+          <small>#2048</small>
+          <strong>Payment receipt not showing</strong>
+          <em>Open</em>
         </div>
-        <button type="submit" class="btn btn-primary btn-full">Sign in</button>
-      </form>
+        <div class="console-row">
+          <small>#2047</small>
+          <strong>Password reset verification</strong>
+          <em>In progress</em>
+        </div>
+        <div class="console-row">
+          <small>#2046</small>
+          <strong>Portal attachment review</strong>
+          <em>Resolved</em>
+        </div>
+        <div class="console-meter">
+          <div>
+            <span>Resolution load</span>
+            <strong>72%</strong>
+          </div>
+          <div class="meter-track"><span></span></div>
+        </div>
+      </div>
+    </section>
 
-      <p class="login-hint">
-        Forgot your password?
-        <a href="mailto:admin@company.com">Contact administrator</a>
-      </p>
-      <p class="login-hint">
-        Don't have an account?
-        <a href="pages/register.html">Create account</a>
-      </p>
+    <section class="landing-strip" aria-label="SupportDesk highlights">
+      <div>
+        <strong>3 roles</strong>
+        <span>Customer, agent, admin</span>
+      </div>
+      <div>
+        <strong>Live replies</strong>
+        <span>Conversation per ticket</span>
+      </div>
+      <div>
+        <strong>Smart queue</strong>
+        <span>Status, priority, assignment</span>
+      </div>
+    </section>
 
-    </div>
-  </div>
+    <section class="landing-workflow" aria-label="SupportDesk workflow">
+      <div class="workflow-intro">
+        <p class="landing-kicker">How the desk moves</p>
+        <h2>Designed for the handoff from request to resolution.</h2>
+      </div>
+      <div class="workflow-grid">
+        <article>
+          <span>01</span>
+          <strong>Capture</strong>
+          <p>Customers create clean tickets with category, priority, description, and attachments.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <strong>Assign</strong>
+          <p>Admins and agents route open requests to the right staff member before work begins.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <strong>Resolve</strong>
+          <p>Every reply, status change, and update stays attached to the ticket conversation.</p>
+        </article>
+      </div>
+    </section>
+  </main>
 
-  <script src="js/login.js"></script>
+  <script src="js/landing.js"></script>
 </body>
 </html>

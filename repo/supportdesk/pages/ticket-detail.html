@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SupportDesk — Ticket Detail</title>
+  <title>SupportDesk - Ticket Detail</title>
   <link rel="stylesheet" href="../css/style.css"/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 </head>
 <body>
-
   <div class="layout">
-
-    <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-logo">
         <div class="logo-icon logo-icon--sm">
@@ -27,13 +24,18 @@
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           Dashboard
         </a>
-        <a href="tickets.html" class="nav-item">
+        <a href="tickets.html" class="nav-item active">
           <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
           All Tickets
+          <span class="nav-badge" id="open-count">-</span>
         </a>
         <a href="create-ticket.html" class="nav-item">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
           New Ticket
+        </a>
+        <a href="staff.html" class="nav-item admin-only" style="display:none">
+          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Staff
         </a>
       </nav>
 
@@ -41,8 +43,8 @@
         <div class="user-pill">
           <div class="avatar" id="user-avatar">--</div>
           <div class="user-info">
-            <div class="user-name" id="user-name">Loading…</div>
-            <div class="user-role" id="user-role">Agent</div>
+            <div class="user-name" id="user-name">Loading...</div>
+            <div class="user-role" id="user-role">Loading...</div>
           </div>
           <button class="logout-btn" onclick="logout()" title="Sign out">
             <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -51,20 +53,17 @@
       </div>
     </aside>
 
-    <!-- Main -->
     <main class="main">
       <div class="page-header">
         <div>
           <h1 class="page-title">Ticket Detail</h1>
-          <p class="page-sub" id="ticket-subtitle">Loading ticket…</p>
+          <p class="page-sub" id="ticket-subtitle">Loading ticket...</p>
         </div>
-        <a href="tickets.html" class="btn btn-ghost">
-          Back to tickets
-        </a>
+        <a href="tickets.html" class="btn btn-ghost">Back to tickets</a>
       </div>
 
       <div id="ticket-loading" class="card">
-        <p class="loading-msg">Loading ticket details…</p>
+        <p class="loading-msg">Loading ticket details...</p>
       </div>
 
       <div id="ticket-detail" class="card" style="display:none;">
@@ -112,12 +111,63 @@
         </div>
       </div>
 
+      <div id="ticket-actions" class="card" style="display:none;">
+        <div class="card-title">Manage Ticket</div>
+        <div class="form-row">
+          <div class="field">
+            <label for="status-select">Status</label>
+            <select id="status-select">
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="priority-select">Priority</label>
+            <select id="priority-select">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="assignee-select">Assigned To</label>
+          <select id="assignee-select">
+            <option value="">Unassigned</option>
+          </select>
+        </div>
+        <div id="update-message" class="success-msg" style="display:none"></div>
+        <div id="update-error" class="error-msg" style="display:none"></div>
+        <button class="btn btn-primary" type="button" onclick="saveTicketChanges()">Save changes</button>
+      </div>
+
+      <div id="ticket-replies" class="card" style="display:none;">
+        <div class="card-title">Conversation</div>
+        <div id="replies-list" class="replies-list"></div>
+        <form id="reply-form" class="reply-form" onsubmit="submitReply(event)">
+          <div class="field">
+            <label for="reply-message">Reply</label>
+            <textarea id="reply-message" rows="4" placeholder="Write a reply..." required></textarea>
+          </div>
+          <div id="reply-error" class="error-msg" style="display:none"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" id="reply-btn">Send reply</button>
+          </div>
+        </form>
+      </div>
+
       <div id="ticket-error" class="card error-msg" style="display:none;"></div>
     </main>
   </div>
 
   <script src="../js/auth.js"></script>
   <script>
+    let activeTicket = null;
+    let pageUser = null;
+
     function getQueryParam(name) {
       const params = new URLSearchParams(window.location.search);
       return params.get(name);
@@ -125,28 +175,35 @@
 
     function escHtml(str = '') {
       return String(str)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
     }
 
     function statusBadge(status = '') {
       const map = {
         open: 'badge-open',
         resolved: 'badge-closed',
-        'in_progress': 'badge-progress',
+        in_progress: 'badge-progress',
         closed: 'badge-closed'
       };
       return `<span class="badge ${map[status] || 'badge-open'}">${escHtml(status.replace('_', ' '))}</span>`;
     }
 
     function priorityBadge(priority = '') {
+      const normalized = priority.toLowerCase();
       const map = {
         low: 'badge-low',
         medium: 'badge-medium',
         high: 'badge-high',
         critical: 'badge-critical'
       };
-      return `<span class="badge ${map[priority.toLowerCase()] || 'badge-medium'}">${escHtml(priority)}</span>`;
+      return `<span class="badge ${map[normalized] || 'badge-medium'}">${escHtml(normalized || 'medium')}</span>`;
+    }
+
+    function canManageTickets() {
+      return pageUser && ['agent', 'admin'].includes(pageUser.role);
     }
 
     async function loadTicket() {
@@ -170,28 +227,10 @@
           throw new Error(data.error || 'Ticket not found');
         }
 
-        document.getElementById('detail-id').textContent = `#${data.id}`;
-        document.getElementById('detail-status').innerHTML = statusBadge(data.status);
-        document.getElementById('detail-subject').textContent = data.subject || '—';
-        document.getElementById('detail-priority').innerHTML = priorityBadge(data.priority);
-        document.getElementById('detail-category').textContent = data.category_name || '—';
-        document.getElementById('detail-user').textContent = data.user_name || data.user_email || '—';
-        document.getElementById('detail-description').textContent = data.description || '—';
-
-        const attachmentsEl = document.getElementById('detail-attachments');
-        if (data.attachments && data.attachments.length) {
-          attachmentsEl.innerHTML = data.attachments.map(att => `
-            <div class="attachment-item">
-              <a href="../${att.file_path}" download>${escHtml(att.file_name)}</a>
-              <span class="attachment-meta">${escHtml(att.mime_type || '')} ${att.file_size ? `• ${att.file_size} bytes` : ''}</span>
-            </div>
-          `).join('');
-        } else {
-          attachmentsEl.textContent = 'No attachments.';
-        }
-
+        await renderTicket(data);
         loadingEl.style.display = 'none';
         detailEl.style.display = 'block';
+        document.getElementById('ticket-replies').style.display = 'block';
       } catch (err) {
         loadingEl.style.display = 'none';
         errorEl.style.display = 'block';
@@ -199,7 +238,173 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', loadTicket);
+    async function renderTicket(data) {
+      activeTicket = data;
+
+      document.getElementById('ticket-subtitle').textContent = `#${data.id} - ${data.subject || 'Ticket'}`;
+      document.getElementById('detail-id').textContent = `#${data.id}`;
+      document.getElementById('detail-status').innerHTML = statusBadge(data.status);
+      document.getElementById('detail-subject').textContent = data.subject || '-';
+      document.getElementById('detail-priority').innerHTML = priorityBadge(data.priority);
+      document.getElementById('detail-category').textContent = data.category_name || '-';
+      document.getElementById('detail-user').textContent = data.user_name || data.user_email || '-';
+      document.getElementById('detail-description').textContent = data.description || '-';
+
+      const attachmentsEl = document.getElementById('detail-attachments');
+      if (data.attachments && data.attachments.length) {
+        attachmentsEl.innerHTML = data.attachments.map((att) => `
+          <div class="attachment-item">
+            <a href="../${encodeURI(att.file_path)}" download>${escHtml(att.file_name)}</a>
+            <span class="attachment-meta">${escHtml(att.mime_type || '')} ${att.file_size ? `- ${formatBytes(att.file_size)}` : ''}</span>
+          </div>
+        `).join('');
+      } else {
+        attachmentsEl.textContent = 'No attachments.';
+      }
+
+      renderReplies(data.replies || []);
+
+      const actionsEl = document.getElementById('ticket-actions');
+      if (canManageTickets()) {
+        document.getElementById('status-select').value = data.status || 'open';
+        document.getElementById('priority-select').value = data.priority || 'medium';
+        await loadAgents(data.assignee_id);
+        actionsEl.style.display = 'block';
+      } else {
+        actionsEl.style.display = 'none';
+      }
+    }
+
+    async function loadAgents(selectedId) {
+      const select = document.getElementById('assignee-select');
+      const res = await fetch('../api/tickets.php?action=agents');
+      const data = await res.json();
+
+      if (!res.ok) {
+        select.innerHTML = '<option value="">Unassigned</option>';
+        return;
+      }
+
+      select.innerHTML = '<option value="">Unassigned</option>' + data.agents.map((agent) => `
+        <option value="${agent.id}">${escHtml(agent.name)} (${escHtml(agent.role)})</option>
+      `).join('');
+      select.value = selectedId || '';
+    }
+
+    async function saveTicketChanges() {
+      if (!activeTicket) return;
+
+      const messageEl = document.getElementById('update-message');
+      const errorEl = document.getElementById('update-error');
+      messageEl.style.display = 'none';
+      errorEl.style.display = 'none';
+
+      const payload = {
+        status: document.getElementById('status-select').value,
+        priority: document.getElementById('priority-select').value,
+        assignee_id: document.getElementById('assignee-select').value || null
+      };
+
+      try {
+        const res = await fetch(`../api/tickets.php?id=${encodeURIComponent(activeTicket.id)}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Unable to update ticket');
+        }
+
+        messageEl.textContent = 'Ticket updated.';
+        messageEl.style.display = 'block';
+        await renderTicket(data.ticket);
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+      }
+    }
+
+    async function submitReply(event) {
+      event.preventDefault();
+      if (!activeTicket) return;
+
+      const btn = document.getElementById('reply-btn');
+      const errorEl = document.getElementById('reply-error');
+      const textarea = document.getElementById('reply-message');
+      errorEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch('../api/tickets.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'reply',
+            ticket_id: activeTicket.id,
+            message: textarea.value.trim()
+          })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Unable to send reply');
+        }
+
+        textarea.value = '';
+        await renderTicket(data.ticket);
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send reply';
+      }
+    }
+
+    function renderReplies(replies) {
+      const list = document.getElementById('replies-list');
+      if (!replies.length) {
+        list.innerHTML = '<p class="loading-msg">No replies yet.</p>';
+        return;
+      }
+
+      list.innerHTML = replies.map((reply) => `
+        <div class="reply-item">
+          <div class="reply-head">
+            <strong>${escHtml(reply.user_name || reply.user_email)}</strong>
+            <span>${escHtml(reply.user_role)} - ${formatDateTime(reply.created_at)}</span>
+          </div>
+          <p>${escHtml(reply.message)}</p>
+        </div>
+      `).join('');
+    }
+
+    function formatBytes(bytes) {
+      const value = Number(bytes);
+      if (!Number.isFinite(value)) return '';
+      if (value < 1024) return `${value} B`;
+      if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+      return `${(value / 1024 / 1024).toFixed(1)} MB`;
+    }
+
+    function formatDateTime(dateStr) {
+      if (!dateStr) return '';
+      return new Date(dateStr).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      pageUser = typeof getUser === 'function' ? await getUser() : null;
+      await loadTicket();
+    });
   </script>
 </body>
 </html>

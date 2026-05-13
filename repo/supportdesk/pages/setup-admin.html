@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SupportDesk - First Admin Setup</title>
+  <link rel="stylesheet" href="../css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="login-body">
+  <div class="login-wrap auth-layout">
+    <section class="auth-showcase" aria-hidden="true">
+      <div class="auth-brand-lockup">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <span>SupportDesk</span>
+      </div>
+
+      <div class="auth-board">
+        <div class="auth-ticket auth-ticket-purple">
+          <span class="auth-status-dot"></span>
+          <div>
+            <strong>Admin</strong>
+            <p>System owner</p>
+          </div>
+          <small>Setup</small>
+        </div>
+        <div class="auth-ticket auth-ticket-blue">
+          <span class="auth-status-dot"></span>
+          <div>
+            <strong>Staff</strong>
+            <p>Agent accounts</p>
+          </div>
+          <small>Next</small>
+        </div>
+        <div class="auth-ticket auth-ticket-green">
+          <span class="auth-status-dot"></span>
+          <div>
+            <strong>Queue</strong>
+            <p>Ready to open</p>
+          </div>
+          <small>Go</small>
+        </div>
+      </div>
+
+      <div class="auth-metrics">
+        <div><strong>01</strong><span>Admin</span></div>
+        <div><strong>02</strong><span>Staff</span></div>
+        <div><strong>03</strong><span>Desk</span></div>
+      </div>
+    </section>
+
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <span>SupportDesk</span>
+      </div>
+
+      <h1 class="login-title">First Admin Setup</h1>
+      <p class="login-sub">Create the first administrator account for this system</p>
+
+      <form id="setup-form" onsubmit="setupAdmin(event)">
+        <div class="field">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" placeholder="Admin Name" required/>
+        </div>
+        <div class="field">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" placeholder="admin@example.com" required/>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="At least 6 characters" required/>
+        </div>
+        <div id="setup-error" class="error-msg" style="display:none"></div>
+        <div id="setup-success" class="success-msg" style="display:none"></div>
+        <button type="submit" class="btn btn-primary btn-full" id="setup-submit">Create first admin</button>
+      </form>
+
+      <div id="setup-unavailable" class="error-msg" style="display:none">
+        An admin account already exists. Please sign in as admin to create staff accounts.
+      </div>
+
+      <p class="login-hint">
+        Already have an account?
+        <a href="login.html">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="../js/setup-admin.js"></script>
+</body>
+</html>

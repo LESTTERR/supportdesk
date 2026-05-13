@@ -1,22 +1,34 @@
 ﻿<?php
 header('Content-Type: application/json');
-session_start();
-require_once '../config/database.php';
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+require_once __DIR__ . '/../config/database.php';
 
-$data = json_decode(file_get_contents('php://input'), true);
-$name = $data['name'] ?? '';
-$email = $data['email'] ?? '';
+$data = json_decode(file_get_contents('php://input'), true) ?: [];
+$name = trim($data['name'] ?? '');
+$email = trim($data['email'] ?? '');
 $password = $data['password'] ?? '';
-$role = $data['role'] ?? 'agent';
+$role = 'customer';
 
-// Basic validation
 if (!$name || !$email || !$password) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Name, email, and password are required']);
     exit;
 }
 
-// Check if user already exists
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Please enter a valid email address']);
+    exit;
+}
+
+if (strlen($password) < 6) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Password must be at least 6 characters']);
+    exit;
+}
+
 $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
 $stmt->execute([$email]);
 if ($stmt->fetch()) {
@@ -25,16 +37,14 @@ if ($stmt->fetch()) {
     exit;
 }
 
-// Hash password
 $hash = password_hash($password, PASSWORD_DEFAULT);
 
-// Insert new user
 $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
 try {
     $stmt->execute([$name, $email, $hash, $role]);
     $userId = $pdo->lastInsertId();
     
-    // Set session
+    session_regenerate_id(true);
     $_SESSION['user'] = [
         'id' => $userId,
         'name' => $name,

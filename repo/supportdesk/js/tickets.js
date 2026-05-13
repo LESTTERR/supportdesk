@@ -7,10 +7,14 @@ let searchQuery = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     loadTickets();
-    document.getElementById('search-input').addEventListener('input', (e) => {
-        searchQuery = e.target.value;
-        loadTickets();
-    });
+
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (event) => {
+            searchQuery = event.target.value.trim();
+            loadTickets();
+        });
+    }
 });
 
 async function loadTickets() {
@@ -18,9 +22,22 @@ async function loadTickets() {
     if (currentFilter !== 'all') params.append('status', currentFilter);
     if (searchQuery) params.append('search', searchQuery);
 
-    const res = await fetch(`../api/tickets.php?${params.toString()}`);
-    const tickets = await res.json();
-    renderTickets(tickets);
+    const tbody = document.getElementById('ticket-tbody');
+    tbody.innerHTML = '<tr><td colspan="7" class="table-loading">Loading tickets...</td></tr>';
+
+    try {
+        const res = await fetch(`../api/tickets.php?${params.toString()}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error || 'Unable to load tickets');
+        }
+
+        renderTickets(data);
+        updateSummary(data);
+    } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="table-loading">${escHtml(err.message)}</td></tr>`;
+    }
 }
 
 function renderTickets(tickets) {
@@ -29,64 +46,86 @@ function renderTickets(tickets) {
         tbody.innerHTML = '<tr><td colspan="7">No tickets found</td></tr>';
         return;
     }
-    tbody.innerHTML = tickets.map(t => `
+
+    tbody.innerHTML = tickets.map((ticket) => `
         <tr>
-            <td class="ticket-id">#${t.id}</td>
-            <td class="ticket-subject"><a href="ticket-detail.html?id=${t.id}">${escHtml(t.subject)}</a></td>
-            <td>${statusBadge(t.status)}</td>
-            <td>${priorityBadge(t.priority)}</td>
-            <td><div class="ticket-user"><div class="av-sm">${initials(t.user_name)}</div>${escHtml(t.user_name)}</div></td>
-            <td>Unassigned</td>
-            <td>${formatDate(t.created_at)}</td>
+            <td class="ticket-id">#${ticket.id}</td>
+            <td class="ticket-subject"><a href="ticket-detail.html?id=${ticket.id}">${escHtml(ticket.subject)}</a></td>
+            <td>${statusBadge(ticket.status)}</td>
+            <td>${priorityBadge(ticket.priority)}</td>
+            <td><div class="ticket-user"><div class="av-sm">${initials(ticket.user_name)}</div>${escHtml(ticket.user_name)}</div></td>
+            <td>${ticket.assignee_name ? escHtml(ticket.assignee_name) : '<span class="muted-text">Unassigned</span>'}</td>
+            <td>${formatDate(ticket.created_at)}</td>
         </tr>
     `).join('');
 }
 
+function updateSummary(tickets) {
+    const summary = document.getElementById('ticket-summary');
+    if (!summary) return;
+
+    const label = currentFilter === 'all' ? 'tickets' : currentFilter.replace('_', ' ') + ' tickets';
+    summary.textContent = `${tickets.length} ${label}`;
+}
+
 function setFilter(filter, btn) {
     currentFilter = filter;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-btn').forEach((button) => button.classList.remove('active'));
     btn.classList.add('active');
     loadTickets();
 }
 
-function filterTickets() { loadTickets(); } // debounced if needed
-// helpers: statusBadge, priorityBadge, formatDate, initials, escHtml same as before
+function filterTickets() {
+    const searchInput = document.getElementById('search-input');
+    searchQuery = searchInput ? searchInput.value.trim() : '';
+    loadTickets();
+}
 
-
-/* ── Helpers ── */
 function escHtml(str = '') {
-  return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }
 
 function initials(name = '') {
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    return name
+        .split(' ')
+        .filter(Boolean)
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2) || '--';
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  });
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
 }
 
-function statusBadge(s = '') {
-  const map = {
-    open: 'badge-open',
-    closed: 'badge-closed',
-    'in progress': 'badge-progress'
-  };
-  return `<span class="badge ${map[s] || 'badge-open'}">${escHtml(s)}</span>`;
+function statusBadge(status = '') {
+    const map = {
+        open: 'badge-open',
+        in_progress: 'badge-progress',
+        resolved: 'badge-closed',
+        closed: 'badge-closed',
+    };
+    const label = status.replace('_', ' ');
+    return `<span class="badge ${map[status] || 'badge-open'}">${escHtml(label)}</span>`;
 }
 
-function priorityBadge(p = '') {
-  const map = {
-    High:'badge-high',
-    Medium:'badge-medium',
-    Low:'badge-low',
-    Critical:'badge-critical'
-  };
-  return `<span class="badge ${map[p] || 'badge-medium'}">${escHtml(p)}</span>`;
+function priorityBadge(priority = '') {
+    const normalized = priority.toLowerCase();
+    const map = {
+        high: 'badge-high',
+        medium: 'badge-medium',
+        low: 'badge-low',
+        critical: 'badge-critical',
+    };
+    return `<span class="badge ${map[normalized] || 'badge-medium'}">${escHtml(normalized || 'medium')}</span>`;
 }
